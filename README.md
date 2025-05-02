@@ -64,6 +64,28 @@ double random_num = dist(gen);// 生成正态分布随机数
       （对一个矩阵执行激活函数，相当于对每个元素执行激活函数）
 2. 计算损失函数（Loss）：
     - 使用**交叉熵损失函数**（Cross-Entropy Loss）：
-      $$L = - \frac{1}{B} \sum_{i=1}^B \sum_{j=1}^{n_L} y_j^{(i)} \log a_j^{[L](i)}$$
-      这是一个标量，表示这个 batch 中所有样本的平均损失。
+        $$
+        L = - \frac{1}{B} \sum_{i=1}^B \sum_{j=1}^{n_L} y_j^{(i)} \log a_j^{[L](i)}
+        $$
+        这是一个标量，表示这个 batch 中所有样本的平均损失。
 3. 计算反向传播（Back Propagation）：
+    - 在`"softmax"`激活函数下，输出层的梯度为：
+        $$
+        dZ^{(L)} = a^{(L)} - y \in \mathbb{R}^{n_L \times B}
+        $$
+    - 从后往前算：
+        $$
+        \frac{\partial L}{\partial W^{(l)}} = \frac{1}{B} dZ^{(l)} (a^{(l-1)})^T \in \mathbb{R}^{n_l \times n_{l-1}}
+        $$
+        $$
+        \frac{\partial L}{\partial b^{(l)}} = \frac{1}{B} \sum_{i=1}^B dZ^{(l)} \in \mathbb{R}^{n_l \times 1}
+        $$
+4. 梯度下降更新参数（Gradient Descent）：
+    - 对每层，给定学习率 $\alpha$，更新：
+        $$
+        W^{(l)}=W^{(l)}-\alpha \frac{\partial L}{\partial W^{(l)}}
+        $$
+        $$
+        b^{(l)}=b^{(l)}-\alpha \frac{\partial L}{\partial b^{(l)}}
+        $$
+5. 重复以上步骤，直到达到最大迭代次数。

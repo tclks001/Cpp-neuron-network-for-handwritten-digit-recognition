@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <vector>
 #include <cmath>
+#include <random>
 #include <algorithm>
 
 using namespace std;
@@ -10,8 +11,23 @@ class Matrix {
 public:
     int rows, cols;
     vector<vector<T>> data;
-
+    Matrix() : rows(0), cols(0), data() {}
     Matrix(int r, int c) : rows(r), cols(c), data(r, vector<T>(c)) {}
+
+    // constructor to initialize weight matrix with random values based on normal distribution
+    Matrix(int r,int c, double stddev){
+        rows = r;
+        cols = c;
+        data = vector<vector<T>>(r, vector<T>(c));
+        random_device rd;
+        mt19937 gen(rd());
+        normal_distribution<double> dist(0.0, stddev);
+        for(int i=0; i<rows; i++) {
+            for(int j=0; j<cols; j++) {
+                data[i][j] = dist(gen); // fill weight matrix with random values based on normal distribution
+            }
+        }
+    }
     Matrix(const vector<vector<T>>& d) : rows(d.size()), cols(d[0].size()), data(d) {}
     Matrix(const Matrix<T>& m) : rows(m.rows), cols(m.cols), data(m.data) {}
     ~Matrix() {}
@@ -61,6 +77,77 @@ public:
         }
         return res;
     }
+
+    // activation sigmoid
+    Matrix<T> sigmoid() const {
+        Matrix<T> res(rows, cols);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                res.data[i][j] = 1 / (1 + exp(-data[i][j]));
+            }
+        }
+        return res;
+    }
+
+    // activation relu
+    Matrix<T> relu () const {
+        Matrix<T> res(rows, cols);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                res.data[i][j] = max(0.0, data[i][j]);
+            }
+        }
+        return res;
+    }
+
+    // activation softmax
+    Matrix<T> softmax() const {
+        Matrix<T> res(rows, cols);
+        for (int i = 0; i < rows; i++) {
+            double sum = 0;
+            for (int j = 0; j < cols; j++) {
+                sum += exp(data[i][j]);
+            }
+            for (int j = 0; j < cols; j++) {
+                res.data[i][j] = exp(data[i][j]) / sum;
+            }
+        }
+        return res;
+    }
+
+    // derivative of sigmoid
+    Matrix<T> sigmoid_deriv() const {
+        Matrix<T> res(rows, cols);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                res.data[i][j] = data[i][j] * (1 - data[i][j]);
+            }
+        }
+        return res;
+    }
+
+    // derivative of relu
+    Matrix<T> relu_deriv() const {
+        Matrix<T> res(rows, cols);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                res.data[i][j] = data[i][j] > 0 ? 1 : 0;
+            }
+        }
+        return res;
+    }
+
+    // derivative of softmax
+    Matrix<T> softmax_deriv() const {
+        Matrix<T> res(rows, cols);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                res.data[i][j] = data[i][j] * (1 - data[i][j]);
+            }
+        }
+        return res;
+    }
+
     void print() const {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
